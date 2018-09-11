@@ -4,22 +4,22 @@
 
 <img src="/img/1.jpg">
 
-192.168.239.139 : IP 192.168.239.139
+Controller : IP 192.168.239.139
 
 Compute1 : IP 192.168.239.140
 
 ### 2. Cài đặt
 
-Set name 192.168.239.139: 
+Set name controller: 
 
-`hostnamectl set-hostname 192.168.239.139`
+`hostnamectl set-hostname controller`
 
 `hostnamectl set-hostname compute1`
 
 `/etc/hosts`
 
 ```sh 
-192.168.239.139    192.168.239.139
+192.168.239.139    controller
 192.168.239.140    compute1
 ```
 
@@ -174,13 +174,13 @@ provider = fernet
 keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
 ```
-
+```
 keystone-manage bootstrap --bootstrap-password Welcome123 \
   --bootstrap-admin-url http://192.168.239.139:5000/v3/ \
   --bootstrap-internal-url http://192.168.239.139:5000/v3/ \
   --bootstrap-public-url http://192.168.239.139:5000/v3/ \
   --bootstrap-region-id RegionOne
-
+```
 `echo "ServerName controller" >> /etc/httpd/conf/httpd.conf`
 
 `ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/`
