@@ -331,7 +331,7 @@ flavor = keystone
 stores = file,http
 default_store = file
 filesystem_store_datadir = /var/lib/glance/images/
-
+```
 `vi /etc/glance/glance-registry.conf`
 
 ``` sh
