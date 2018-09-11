@@ -573,7 +573,6 @@ username = placement
 password = Welcome123
 
 [libvirt]
-# ...
 virt_type = qemu
 
 ```
@@ -584,9 +583,13 @@ systemctl start libvirtd.service openstack-nova-compute.service
 
 
 `. admin-openrc`
+
 `openstack compute service list`
+
 `openstack catalog list`
+
 `openstack image list`
+
 `nova-status upgrade check`
 
 ### Neutron
