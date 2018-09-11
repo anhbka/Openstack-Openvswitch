@@ -365,7 +365,8 @@ systemctl start openstack-glance-api.service \
 
 `wget http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img`
 
-``` openstack image create "cirros" \
+``` 
+openstack image create "cirros" \
   --file cirros-0.4.0-x86_64-disk.img \
   --disk-format qcow2 --container-format bare \
   --public
