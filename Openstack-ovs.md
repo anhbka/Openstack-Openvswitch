@@ -586,6 +586,8 @@ systemctl start libvirtd.service openstack-nova-compute.service
 
 `openstack compute service list`
 
+`su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova`
+
 `openstack catalog list`
 
 `openstack image list`
