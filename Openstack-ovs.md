@@ -1,4 +1,4 @@
-### Openstack-Rocky
+### Openstack-OVS
 
 ### 1. Mô hình
 
@@ -590,10 +590,9 @@ systemctl start libvirtd.service openstack-nova-compute.service
 
 ### Neutron
 
-## 6. Cài đặt networking service - neutron
+### Cài đặt networking service - neutron
 
-<a name="6.1"></a>
-### 6.1 Cài đặt trên node controller
+###  Cài đặt trên node controller
 
 Cài các gói:
 `yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-openvswitch ebtables`
@@ -1035,7 +1034,7 @@ systemctl start neutron-l3-agent.service
 
 
 <a name="6.2"></a>
-### 6.2 Cài đặt trên node compute
+### Cài đặt trên node compute
 
 **(Làm tương tự với compute 2)**
 
