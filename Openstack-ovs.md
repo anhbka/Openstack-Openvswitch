@@ -61,7 +61,7 @@ Kiểm tra:
 
 ### Cài đặt repo
 
-`yum install centos-release-openstack-queens`
+`yum install centos-release-openstack-queens -y`
 
 `yum upgrade -y`
 
