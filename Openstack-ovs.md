@@ -159,7 +159,7 @@ IDENTIFIED BY 'Welcome123';
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
 IDENTIFIED BY 'Welcome123';
 ```
-`yum install openstack-keystone httpd mod_wsgi`
+`yum install openstack-keystone httpd mod_wsgi -y`
 
 `vi /etc/keystone/keystone.conf`
 ``` sh
