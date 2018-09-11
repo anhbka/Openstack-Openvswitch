@@ -971,7 +971,7 @@ ip link set dev br-provider up
 cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-br-provider
 ```
 
-- Setup lại card mạng eth0
+- Setup lại card mạng ens34 ( Dùng lệnh ip a lấy HWADDR )
 ```
 vi /etc/sysconfig/network-scripts/ifcfg-eth0
 
