@@ -1188,7 +1188,7 @@ cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcf
 - Setup lại card mạng eth0
 ```
 vi /etc/sysconfig/network-scripts/ifcfg-eth0
-
+NAME=br-provider
 DEVICE=eth0
 HWADDR="00:0c:29:51:53:5e"
 TYPE=OVSPort
@@ -1198,6 +1198,7 @@ ONBOOT=yes
 ```
 - Setup card mạng br-provider
 ```
+NAME=br-provider
 DEVICE=br-provider
 DEVICETYPE=ovs
 TYPE=OVSBridge
