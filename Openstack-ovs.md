@@ -4,10 +4,6 @@
 
 <img src="/img/1.jpg">
 
-Controller : IP 192.168.239.139
-
-Compute1 : IP 192.168.239.140
-
 ### 2. Cài đặt
 
 Set name controller: 
@@ -16,11 +12,17 @@ Set name controller:
 
 `hostnamectl set-hostname compute1`
 
+`hostnamectl set-hostname compute2`
+
 `/etc/hosts`
 
 ```sh 
-192.168.239.139    controller
-192.168.239.140    compute1
+192.168.239.190    controller
+192.168.239.191    compute1
+192.168.239.192	   compute2
+172.16.10.128	controller
+172.16.10.129	compute1
+172.16.10.130	compute2
 ```
 
 Tắt `firewall` và `selinux`:
@@ -82,7 +84,7 @@ Kiểm tra:
 
 ``` sh
 [mysqld]
-bind-address = 192.168.239.139
+bind-address = 192.168.239.190
 
 default-storage-engine = innodb
 innodb_file_per_table = on
@@ -118,7 +120,7 @@ systemctl start rabbitmq-server.service
 
 `vi /etc/sysconfig/memcached`
 
-` OPTIONS="-l 192.168.239.139,::1"`
+` OPTIONS="-l 192.168.239.190,::1"`
 ```
 systemctl enable memcached.service
 systemctl start memcached.service
@@ -133,13 +135,13 @@ systemctl start memcached.service
 ``` sh
 #[Member]
 ETCD_DATA_DIR="/var/lib/etcd/default.etcd"
-ETCD_LISTEN_PEER_URLS="http://192.168.239.139:2380"
-ETCD_LISTEN_CLIENT_URLS="http://192.168.239.139:2379"
-ETCD_NAME="192.168.239.139"
+ETCD_LISTEN_PEER_URLS="http://192.168.239.190:2380"
+ETCD_LISTEN_CLIENT_URLS="http://192.168.239.190:2379"
+ETCD_NAME="192.168.239.190"
 #[Clustering]
-ETCD_INITIAL_ADVERTISE_PEER_URLS="http://192.168.239.139:2380"
-ETCD_ADVERTISE_CLIENT_URLS="http://192.168.239.139:2379"
-ETCD_INITIAL_CLUSTER="192.168.239.139=http://192.168.239.139:2380"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://192.168.239.190:2380"
+ETCD_ADVERTISE_CLIENT_URLS="http://192.168.239.190:2379"
+ETCD_INITIAL_CLUSTER="192.168.239.190=http://192.168.239.190:2380"
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster-01"
 ETCD_INITIAL_CLUSTER_STATE="new"
 ```
@@ -164,7 +166,7 @@ IDENTIFIED BY 'Welcome123';
 `vi /etc/keystone/keystone.conf`
 ``` sh
 [database]
-connection = mysql+pymysql://keystone:Welcome123@192.168.239.139/keystone
+connection = mysql+pymysql://keystone:Welcome123@192.168.239.190/keystone
 [token]
 provider = fernet 
 ```
@@ -176,9 +178,9 @@ keystone-manage credential_setup --keystone-user keystone --keystone-group keyst
 ```
 ```
 keystone-manage bootstrap --bootstrap-password Welcome123 \
-  --bootstrap-admin-url http://192.168.239.139:5000/v3/ \
-  --bootstrap-internal-url http://192.168.239.139:5000/v3/ \
-  --bootstrap-public-url http://192.168.239.139:5000/v3/ \
+  --bootstrap-admin-url http://192.168.239.190:5000/v3/ \
+  --bootstrap-internal-url http://192.168.239.190:5000/v3/ \
+  --bootstrap-public-url http://192.168.239.190:5000/v3/ \
   --bootstrap-region-id RegionOne
 ```
 `echo "ServerName controller" >> /etc/httpd/conf/httpd.conf`
@@ -197,7 +199,7 @@ export OS_PASSWORD=Welcome123
 export OS_PROJECT_NAME=admin
 export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_DOMAIN_NAME=Default
-export OS_AUTH_URL=http://192.168.239.139:5000/v3
+export OS_AUTH_URL=http://192.168.239.190:5000/v3
 export OS_IDENTITY_API_VERSION=3
 ```
 
@@ -226,11 +228,11 @@ openstack user create --domain default \
 `unset OS_AUTH_URL Welcome123`
 
 ```
-openstack --os-auth-url http://192.168.239.139:5000/v3 \
+openstack --os-auth-url http://192.168.239.190:5000/v3 \
   --os-project-domain-name Default --os-user-domain-name Default \
   --os-project-name admin --os-username admin token issue
   
-openstack --os-auth-url http://192.168.239.139:5000/v3 \
+openstack --os-auth-url http://192.168.239.190:5000/v3 \
   --os-project-domain-name Default --os-user-domain-name Default \
   --os-project-name demo --os-username demo token issue  
 
@@ -244,7 +246,7 @@ export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_NAME=admin
 export OS_USERNAME=admin
 export OS_PASSWORD=Welcome123
-export OS_AUTH_URL=http://192.168.239.139:5000/v3
+export OS_AUTH_URL=http://192.168.239.190:5000/v3
 export OS_IDENTITY_API_VERSION=3
 export OS_IMAGE_API_VERSION=2
 
@@ -255,7 +257,7 @@ export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_NAME=demo
 export OS_USERNAME=demo
 export OS_PASSWORD=Welcome123
-export OS_AUTH_URL=http://192.168.239.139:5000/v3
+export OS_AUTH_URL=http://192.168.239.190:5000/v3
 export OS_IDENTITY_API_VERSION=3
 export OS_IMAGE_API_VERSION=2
 ```
@@ -297,13 +299,13 @@ openstack service create --name glance \
   --description "OpenStack Image" image
   
 openstack endpoint create --region RegionOne \
-  image public http://192.168.239.139:9292  
+  image public http://172.16.10.128:9292  
 
 openstack endpoint create --region RegionOne \
-  image internal http://192.168.239.139:9292
+  image internal http://172.16.10.128:9292
 
 openstack endpoint create --region RegionOne \
-  image admin http://192.168.239.139:9292
+  image admin http://172.16.10.128:9292
 ```
 `yum install openstack-glance -y`
 
@@ -311,12 +313,12 @@ openstack endpoint create --region RegionOne \
 
 ``` sh
 [database]
-connection = mysql+pymysql://glance:Welcome123@192.168.239.139/glance
+connection = mysql+pymysql://glance:Welcome123@172.16.10.128/glance
 
 [keystone_authtoken]
-auth_uri = http://192.168.239.139:5000
-auth_url = http://192.168.239.139:5000
-memcached_servers = 192.168.239.139:11211
+auth_uri = http://172.16.10.128:5000
+auth_url = http://172.16.10.128:5000
+memcached_servers = 172.16.10.128:11211
 auth_type = password
 project_domain_name = Default
 user_domain_name = Default
@@ -336,11 +338,11 @@ filesystem_store_datadir = /var/lib/glance/images/
 
 ``` sh
 [database]
-connection = mysql+pymysql://glance:Welcome123@192.168.239.139/glance
+connection = mysql+pymysql://glance:Welcome123@172.16.10.128/glance
 [keystone_authtoken]
-auth_uri = http://192.168.239.139:5000
-auth_url = http://192.168.239.139:5000
-memcached_servers = 192.168.239.139:11211
+auth_uri = http://172.16.10.128:5000
+auth_url = http://172.16.10.128:5000
+memcached_servers = 172.16.10.128:11211
 auth_type = password
 project_domain_name = Default
 user_domain_name = Default
@@ -413,13 +415,13 @@ openstack service create --name nova \
   --description "OpenStack Compute" compute
 
 openstack endpoint create --region RegionOne \
-  compute public http://192.168.239.139:8774/v2.1  
+  compute public http://172.16.10.128:8774/v2.1  
 
 openstack endpoint create --region RegionOne \
-  compute internal http://192.168.239.139:8774/v2.1
+  compute internal http://172.16.10.128:8774/v2.1
 
 openstack endpoint create --region RegionOne \
-  compute admin http://192.168.239.139:8774/v2.1
+  compute admin http://172.16.10.128:8774/v2.1
 ```
 
 `openstack user create --domain default --password-prompt placement`
@@ -429,9 +431,9 @@ openstack endpoint create --region RegionOne \
 `openstack service create --name placement --description "Placement API" placement`
 
 ``` sh
-openstack endpoint create --region RegionOne placement public http://192.168.239.139:8778
-openstack endpoint create --region RegionOne placement internal http://192.168.239.139:8778
-openstack endpoint create --region RegionOne placement admin http://192.168.239.139:8778
+openstack endpoint create --region RegionOne placement public http://172.16.10.128:8778
+openstack endpoint create --region RegionOne placement internal http://172.16.10.128:8778
+openstack endpoint create --region RegionOne placement admin http://172.16.10.128:8778
 ```
 
 ```
@@ -445,23 +447,23 @@ yum install openstack-nova-api openstack-nova-conductor \
 ``` sh
 [DEFAULT]
 enabled_apis = osapi_compute,metadata
-transport_url = rabbit://openstack:Welcome123@192.168.239.139
-my_ip = 192.168.239.139
+transport_url = rabbit://openstack:Welcome123@172.16.10.128
+my_ip = 172.16.10.128
 use_neutron = True
 firewall_driver = nova.virt.firewall.NoopFirewallDriver
 
 [api_database]
-connection = mysql+pymysql://nova:Welcome123@192.168.239.139/nova_api
+connection = mysql+pymysql://nova:Welcome123@192.168.239.190/nova_api
 
 [database]
-connection = mysql+pymysql://nova:Welcome123@192.168.239.139/nova
+connection = mysql+pymysql://nova:Welcome123@192.168.239.190/nova
 
 [api]
 auth_strategy = keystone
 
 [keystone_authtoken]
-auth_url = http://192.168.239.139:5000/v3
-memcached_servers = 192.168.239.139:11211
+auth_url = http://172.16.10.128:5000/v3
+memcached_servers = 172.16.10.128:11211
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -475,7 +477,7 @@ server_listen = $my_ip
 server_proxyclient_address = $my_ip
 
 [glance]
-api_servers = http://192.168.239.139:9292
+api_servers = http://172.16.10.128:9292
 
 [oslo_concurrency]
 lock_path = /var/lib/nova/tmp
@@ -486,7 +488,7 @@ project_domain_name = Default
 project_name = service
 auth_type = password
 user_domain_name = Default
-auth_url = http://192.168.239.139:5000/v3
+auth_url = http://172.16.10.128:5000/v3
 username = placement
 password = Welcome123
 
@@ -532,8 +534,8 @@ systemctl start openstack-nova-api.service \
 ``` sh
 [DEFAULT]
 enabled_apis = osapi_compute,metadata
-transport_url = rabbit://openstack:Welcome123@192.168.239.139
-my_ip = 192.168.239.140
+transport_url = rabbit://openstack:Welcome123@172.16.10.128
+my_ip = 172.16.10.129
 use_neutron = True
 firewall_driver = nova.virt.firewall.NoopFirewallDriver
 
@@ -541,8 +543,8 @@ firewall_driver = nova.virt.firewall.NoopFirewallDriver
 auth_strategy = keystone
 
 [keystone_authtoken]
-auth_url = http://192.168.239.139:5000/v3
-memcached_servers = 192.168.239.139:11211
+auth_url = http://172.16.10.128:5000/v3
+memcached_servers = 172.16.10.128:11211
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -554,10 +556,10 @@ password = Welcome123
 enabled = True
 server_listen = 0.0.0.0
 server_proxyclient_address = $my_ip
-novncproxy_base_url = http://192.168.239.139:6080/vnc_auto.html
+novncproxy_base_url = http://192.168.239.190:6080/vnc_auto.html
 
 [glance]
-api_servers = http://192.168.239.139:9292
+api_servers = http://172.16.10.128:9292
 
 [oslo_concurrency]
 lock_path = /var/lib/nova/tmp
@@ -568,7 +570,7 @@ project_domain_name = Default
 project_name = service
 auth_type = password
 user_domain_name = Default
-auth_url = http://192.168.239.139:5000/v3
+auth_url = http://172.16.10.128:5000/v3
 username = placement
 password = Welcome123
 
@@ -580,7 +582,7 @@ virt_type = qemu
 systemctl enable libvirtd.service openstack-nova-compute.service
 systemctl start libvirtd.service openstack-nova-compute.service
 ```
-
+Làm tương tự trên node compute2
 
 `. admin-openrc`
 
@@ -668,7 +670,7 @@ openstack service create --name neutron --description "OpenStack Networking" net
 Tạo Networking service API endpoints:
 
 ```
-openstack endpoint create --region RegionOne network public http://192.168.239.139:9696
+openstack endpoint create --region RegionOne network public http://172.16.10.128:9696
 
 +--------------+----------------------------------+
 | Field        | Value                            |
@@ -684,7 +686,7 @@ openstack endpoint create --region RegionOne network public http://192.168.239.1
 | url          | http://controller:9696           |
 +--------------+----------------------------------+
 
-openstack endpoint create --region RegionOne network internal http://192.168.239.139:9696
+openstack endpoint create --region RegionOne network internal http://172.16.10.128:9696
 
 +--------------+----------------------------------+
 | Field        | Value                            |
@@ -700,7 +702,7 @@ openstack endpoint create --region RegionOne network internal http://192.168.239
 | url          | http://controller:9696           |
 +--------------+----------------------------------+
 
-openstack endpoint create --region RegionOne network admin http://192.168.239.139:9696
+openstack endpoint create --region RegionOne network admin http://172.16.10.128:9696
 
 +--------------+----------------------------------+
 | Field        | Value                            |
@@ -731,18 +733,18 @@ vi /etc/neutron/neutron.conf
 [DEFAULT]
 core_plugin = ml2
 service_plugins =
-transport_url = rabbit://openstack:Welcome123@192.168.239.139
+transport_url = rabbit://openstack:Welcome123@172.16.10.128
 auth_strategy = keystone
 notify_nova_on_port_status_changes = true
 notify_nova_on_port_data_changes = true
 
 [database]
-connection = mysql+pymysql://neutron:Welcome123@192.168.239.139/neutron
+connection = mysql+pymysql://neutron:Welcome123@172.16.10.128/neutron
 
 [keystone_authtoken]
-auth_uri = http://192.168.239.139:5000
-auth_url = http://192.168.239.139:5000
-memcached_servers = 192.168.239.139:11211
+auth_uri = http://172.16.10.128:5000
+auth_url = http://172.16.10.128:5000
+memcached_servers = 172.16.10.128:11211
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -751,7 +753,7 @@ username = neutron
 password = Welcome123
 
 [nova]
-auth_url = http://192.168.239.139:5000
+auth_url = http://172.16.10.128:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -871,7 +873,7 @@ vi /etc/neutron/plugins/ml2/openvswitch_agent.ini
 
 [ovs]
 bridge_mappings = provider:br-provider
-local_ip = 10.10.10.61
+local_ip = 10.10.10.136
 
 [agent]
 tunnel_types = vxlan
@@ -916,7 +918,7 @@ Chỉnh sửa ` /etc/neutron/metadata_agent.ini`
 vi /etc/neutron/metadata_agent.ini
 
 [DEFAULT]
-nova_metadata_host = 192.168.239.139
+nova_metadata_host = 172.16.10.128
 metadata_proxy_shared_secret = Welcome123
 ```
 
@@ -928,8 +930,8 @@ Chỉnh sửa `/etc/nova/nova.conf`
 vi /etc/nova/nova.conf
 
 [neutron]
-url = http://192.168.239.139:9696
-auth_url = http://192.168.239.139:5000
+url = http://172.16.10.128:9696
+auth_url = http://172.16.10.128:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -956,7 +958,7 @@ systemctl enable openvswitch.service
 
 - Gán ip cho card br-provider
 
-`ip addr add 192.168.239.139/24 dev br-provider`
+`ip addr add 192.168.239.190/24 dev br-provider`
 
 - Gán interface vào port của br-provider
 ```
@@ -988,7 +990,7 @@ DEVICE=br-provider
 DEVICETYPE=ovs
 TYPE=OVSBridge
 BOOTPROTO=static
-IPADDR=192.168.239.139
+IPADDR=192.168.239.190
 NETMASK=255.255.255.0
 GATEWAY=192.168.239.1
 DNS=8.8.8.8,1.1.1.1
@@ -1056,14 +1058,14 @@ Cấu hình `/etc/neutron/neutron.conf`
 vi /etc/neutron/neutron.conf
 
 [DEFAULT]
-transport_url = rabbit://openstack:Welcome123@192.168.239.139
+transport_url = rabbit://openstack:Welcome123@172.16.10.128
 auth_strategy = keystone
 core_plugin = ml2
 
 [keystone_authtoken]
-auth_uri = http://192.168.239.139:5000
-auth_url = http://192.168.239.139:5000
-memcached_servers = 192.168.239.139:11211
+auth_uri = http://172.16.10.128:5000
+auth_url = http://172.16.10.128:5000
+memcached_servers = 172.16.10.128:11211
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -1102,7 +1104,7 @@ vi /etc/neutron/plugins/ml2/openvswitch_agent.ini
 
 
 [ovs]
-local_ip = 10.10.10.62 (với compute2 là 10.10.10.63)
+local_ip = 10.10.10.137 (với compute2 là 10.10.10.138)
 
 
 [agent]
@@ -1111,7 +1113,6 @@ l2_population = True
 
 
 [securitygroup]
-# ...
 enable_security_group = true
 firewall_driver = iptables_hybrid
 
@@ -1126,9 +1127,8 @@ vi /etc/nova/nova.conf
 
 
 [neutron]
-...
-url = http://192.168.239.139:9696
-auth_url = http://192.168.239.139:5000
+url = http://172.16.10.128:9696
+auth_url = http://172.16.10.128:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -1170,7 +1170,7 @@ systemctl enable openvswitch.service
 
 - Gán ip cho card br-provider
 
-`ip addr add 192.168.239.140/24 dev br-provider`
+`ip addr add 192.168.239.191/24 dev br-provider`
 
 - Gán interface vào port của br-provider
 ```
@@ -1203,7 +1203,7 @@ DEVICE=br-provider
 DEVICETYPE=ovs
 TYPE=OVSBridge
 BOOTPROTO=static
-IPADDR=192.168.239.140
+IPADDR=192.168.239.191
 NETMASK=255.255.255.0
 GATEWAY=192.168.239.1
 DNS=8.8.8.8,1.1.1.1
