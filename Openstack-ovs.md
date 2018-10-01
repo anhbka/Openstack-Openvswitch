@@ -952,9 +952,9 @@ systemctl enable openvswitch.service
 
 `ovs-vsctl add-br br-provider`
 
-- Flush ip cho card eth0
+- Flush ip cho card ens35
 
-`ip addr flush dev eth0`
+`ip addr flush dev ens35`
 
 - Gán ip cho card br-provider
 
@@ -962,7 +962,7 @@ systemctl enable openvswitch.service
 
 - Gán interface vào port của br-provider
 ```
-ovs-vsctl add-port br-provider eth0
+ovs-vsctl add-port br-provider ens35
 ```
 - Cho phép link kết nối tới br-provider hoạt động
 ```
@@ -970,14 +970,14 @@ ip link set dev br-provider up
 ```
 - Tạo file cấu hình cho card br-provider
 ```
-cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-br-provider
+cp /etc/sysconfig/network-scripts/ifcfg-ens35 /etc/sysconfig/network-scripts/ifcfg-br-provider
 ```
 
 - Setup lại card mạng ens34 ( Dùng lệnh ip a lấy HWADDR )
 ```
-vi /etc/sysconfig/network-scripts/ifcfg-eth0
+vi /etc/sysconfig/network-scripts/ifcfg-ens35
 
-DEVICE=eth0
+DEVICE=ens35
 HWADDR="00:0c:29:cd:cd:4d"
 TYPE=OVSPort
 DEVICETYPE=ovs
@@ -1164,9 +1164,9 @@ systemctl enable openvswitch.service
 
 `ovs-vsctl add-br br-provider`
 
-- Flush ip cho card eth0
+- Flush ip cho card ens35
 
-`ip addr flush dev eth0`
+`ip addr flush dev ens35`
 
 - Gán ip cho card br-provider
 
@@ -1174,7 +1174,7 @@ systemctl enable openvswitch.service
 
 - Gán interface vào port của br-provider
 ```
-ovs-vsctl add-port br-provider eth0
+ovs-vsctl add-port br-provider ens35
 ```
 - Cho phép link kết nối tới br-provider hoạt động
 ```
@@ -1182,14 +1182,14 @@ ip link set dev br-provider up
 ```
 - Tạo file cấu hình cho card br-provider
 ```
-cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-br-provider
+cp /etc/sysconfig/network-scripts/ifcfg-ens35 /etc/sysconfig/network-scripts/ifcfg-br-provider
 ```
 
-- Setup lại card mạng eth0
+- Setup lại card mạng ens35
 ```
-vi /etc/sysconfig/network-scripts/ifcfg-eth0
+vi /etc/sysconfig/network-scripts/ifcfg-ens35
 NAME=br-provider
-DEVICE=eth0
+DEVICE=ens35
 HWADDR="00:0c:29:51:53:5e"
 TYPE=OVSPort
 DEVICETYPE=ovs
