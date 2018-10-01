@@ -178,9 +178,9 @@ keystone-manage credential_setup --keystone-user keystone --keystone-group keyst
 ```
 ```
 keystone-manage bootstrap --bootstrap-password Welcome123 \
-  --bootstrap-admin-url http://192.168.239.190:5000/v3/ \
-  --bootstrap-internal-url http://192.168.239.190:5000/v3/ \
-  --bootstrap-public-url http://192.168.239.190:5000/v3/ \
+  --bootstrap-admin-url http://172.16.10.128:5000/v3/ \
+  --bootstrap-internal-url http://172.16.10.128:5000/v3/ \
+  --bootstrap-public-url http://172.16.10.128:5000/v3/ \
   --bootstrap-region-id RegionOne
 ```
 `echo "ServerName controller" >> /etc/httpd/conf/httpd.conf`
@@ -199,7 +199,7 @@ export OS_PASSWORD=Welcome123
 export OS_PROJECT_NAME=admin
 export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_DOMAIN_NAME=Default
-export OS_AUTH_URL=http://192.168.239.190:5000/v3
+export OS_AUTH_URL=http://172.16.10.128:5000/v3
 export OS_IDENTITY_API_VERSION=3
 ```
 
@@ -228,11 +228,11 @@ openstack user create --domain default \
 `unset OS_AUTH_URL Welcome123`
 
 ```
-openstack --os-auth-url http://192.168.239.190:5000/v3 \
+openstack --os-auth-url http://172.16.10.128:5000/v3 \
   --os-project-domain-name Default --os-user-domain-name Default \
   --os-project-name admin --os-username admin token issue
   
-openstack --os-auth-url http://192.168.239.190:5000/v3 \
+openstack --os-auth-url http://172.16.10.128:5000/v3 \
   --os-project-domain-name Default --os-user-domain-name Default \
   --os-project-name demo --os-username demo token issue  
 
