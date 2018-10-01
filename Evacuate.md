@@ -57,7 +57,7 @@ Một số kĩ thuật khác được dùng để vận chuyển máy ảo:
 
 
 
-
+https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux_OpenStack_Platform/6/html/Administration_Guide/section-evacuation.html#section_move-instance
 
 
 
