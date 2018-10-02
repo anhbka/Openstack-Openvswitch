@@ -60,6 +60,53 @@ Một số kĩ thuật khác được dùng để vận chuyển máy ảo:
 |-----------|----------|------------------|
 |Rebuild máy ảo đang ở trên một compute node (đã down) sang một compute node khác | Rebuild máy ảo đang ở trên một compute node (đang chạy) sang một compute node khác | Di chuyển máy ảo tới một node khác mà không có downtime (hoặc downtime không đáng kể) |
 
+### Hướng dẫn evacuate một máy ảo
+
+`nova evacuate [--password pass] [--on-shared-storage] instance_name [target_host]`
+
+Trong đó:
+
+* `--password pass` : Admin password cho instance sau khi evacuate (không thể sử dụng nếu đi kèm với tùy chọn --on-shared-storage). Nếu password không được chỉ định, một random password sẽ được generate sau khi quá trình evacuate kết thúc.
+
+* `--on-shared-storage` : Tất cả mọi file của máy ảo đều ở trên shared storage
+
+* `instance_name` : Tên máy ảo cần evacuate
+
+* `target_host` : Host chứa máy ảo sau khi rebuild, nếu không lựa chọn thì scheduler sẽ làm nhiệm vụ này.
+
+Ex: Máy ảo chạy trên compute1 
+
+<img src="\img\3.jpg">
+
+Giả sử compute1 bị chết :
+
+<img src="\img\4.jpg">
+
+<img src="\img\5.jpg">
+
+Ta tiến hành evacuate máy ảo sang compute2 bằng câu lệnh:
+
+`nova evacuate vm3 compute2`
+
+Đợi một lúc thì máy ảo sẽ chuyển lại về trạng thái ACTIVE sau khi quá trình evacuation hoàn thành. Máy ảo lúc này đã được chuyển sang host compute2.
+
+<img src="\img\6.jpg">
+
+<img src="\img\7.jpg">
+
+Hướng dẫn evacuate toàn bộ máy ảo:
+
+Câu lệnh:
+
+`nova host-evacuate [--target target_host] [--on-shared-storage] source_host`
+
+Trong đó:
+
+* `--target target_host` : Tên host mà máy ảo sẽ được evacuate tới.
+* `source_host` : Tên host chứa máy ảo cần evacuate.
+
+Tài liệu tham khảo :
+
 
 https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux_OpenStack_Platform/6/html/Administration_Guide/section-evacuation.html#section_move-instance
 
