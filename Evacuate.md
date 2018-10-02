@@ -54,7 +54,11 @@ Một số kĩ thuật khác được dùng để vận chuyển máy ảo:
 16.	Trạng thái của máy ảo chuyển thành ACTIVE
 
 
+### Sự khác biệt giữa evacuate, migrate và live-migration
 
+|Evacuate	| Migrate  |	Live-migration|
+|-----------|----------|------------------|
+|Rebuild máy ảo đang ở trên một compute node (đã down) sang một compute node khác | Rebuild máy ảo đang ở trên một compute node (đang chạy) sang một compute node khác | Di chuyển máy ảo tới một node khác mà không có downtime (hoặc downtime không đáng kể) |
 
 
 https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux_OpenStack_Platform/6/html/Administration_Guide/section-evacuation.html#section_move-instance
