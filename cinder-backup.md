@@ -147,9 +147,9 @@ Kiểm tra lại bằng lệnh `cinder backup-list`
 
 `cinder backup-delete <backup-id>`
 
+Tài liệu tham khảo :
 
-
-
+https://github.com/thaonguyenvan/meditech-thuctap/blob/master/ThaoNV/Tim%20hieu%20OpenStack/docs/cinder/cinder-backup.md
 
 
 
