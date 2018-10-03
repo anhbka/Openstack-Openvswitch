@@ -100,6 +100,16 @@ Dùng lệnh `df -kh` để kiểm tra xem thư mục đã được mount chưa.
 
 ##  2.Hướng dẫn cấu hình cinder backup với backend là NFS
 
+Có 2 loại backup là `full backup` và `incremental backup`
+
+* **Full backup** : Là tạo ra 1 bản backup đầy đủ ban đầu cộng thêm thêm phần dữ liệu mới thay đổi, cứ như vậy sẽ gây ra hiện tượng kích thước bản backup sẽ ngày càng tăng, ưu điểm là bản backup update sau sẽ không bị phụ thuộc vào bản backup trước đó.
+
+<img src="/img/14.png">
+
+* **Incremental backup** : là bản sao lưu trong đó các bản sao liên tiếp của dữ liệu chỉ chứa phần đã thay đổi kể từ khi bản sao lưu trước đó được thực hiện. Khi cần full backup, quá trình khôi phục sẽ cần bản full backup cuối cùng cộng với tất cả các bản incremental backup cho đến thời điểm phục hồi, ưu điểm là giảm bớt kích thước của bản backup mỗi khi update, nhược điểm là phải phụ thuộc vào bản full backup.
+
+<img src="/img/15.png">
+
 ### Cấu hình cinder backup
 
 Chỉnh sửa file /etc/cinder/cinder.conf
