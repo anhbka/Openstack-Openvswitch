@@ -173,6 +173,13 @@ Detach volume
 
 `openstack server remove volume <tên VM> <tên volume>`
 
+Các lệnh khác :
+
+`cinder backup-create <volumeid> --incr <full backup container>`
+
+`cinder backup-create <volumeid> --snapshot`
+
+`cinder backup-create <volumeid> --snapshot --incr <full backup container>`
 
 
 Tài liệu tham khảo :
