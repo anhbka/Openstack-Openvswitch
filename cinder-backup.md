@@ -157,6 +157,24 @@ Kiểm tra lại bằng lệnh `cinder backup-list`
 
 `cinder backup-delete <backup-id>`
 
+Để tạo được backup, volume phải ở trạng thái available. Do vậy nếu volume đang được attach vào máy ảo, cần phải gỡ nó ra.
+
+`openstack volume backup create [--incremental] [--force] VOLUME`
+
+Attach volume
+
+`openstack server add volume <tên VM> <tên volume> --device <tên thiết bị add cho vm>`
+
+Ví dụ:
+
+`openstack server add volume vm3 volume-empty2 --device /dev/sdb`
+
+Detach volume
+
+`openstack server remove volume <tên VM> <tên volume>`
+
+
+
 Tài liệu tham khảo :
 
 https://github.com/thaonguyenvan/meditech-thuctap/blob/master/ThaoNV/Tim%20hieu%20OpenStack/docs/cinder/cinder-backup.md
