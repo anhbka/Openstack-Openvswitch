@@ -1,4 +1,4 @@
-### Cài đặt NFS server và client trên Centos 7
+## 1.Cài đặt NFS server và client trên Centos 7
 
 Hướng dẫn này giải thích cách cấu hình máy chủ NFS trên CentOS 7. Network File System (NFS)) là một filesystem protocol tệp phân tán phổ biến cho phép người dùng gắn kết các thư mục từ xa trên server của họ. NFS cho phép bạn tận dụng không gian lưu trữ ở một vị trí khác và cho phép bạn ghi vào cùng một không gian từ nhiều máy chủ hoặc máy khách một cách dễ dàng. Hoạt động khá tốt cho các thư mục mà người dùng cần truy cập thường xuyên.
 
@@ -98,25 +98,54 @@ Dùng lệnh `df -kh` để kiểm tra xem thư mục đã được mount chưa.
 
 <img src="/img/9.jpg">
 
+##  2.Hướng dẫn cấu hình cinder backup với backend là NFS
 
+### Cấu hình cinder backup
 
+Chỉnh sửa file /etc/cinder/cinder.conf
 
+`vi /etc/cinder/cinder.conf`
 
+Thêm vào 2 dòng sau trong section [DEFAULT]
 
+``` sh
+backup_driver=cinder.backup.drivers.nfs
+backup_share=HOST:EXPORT_PATH
+```
 
+Trong đó HOST:EXPORT_PATH là địa chỉ của đường dẫn đã được thêm vào file /etc/exports ở bên nfs server, lưu ý là tạo 1 lvm mới sau đó mount vào 1 mục mới bên nfs server sau đó thêm đường dẫn và phân quyền thư mục vào file /etc/export, bên cinder chỉ cần cấu hình backup_driver và backup_share sau đó restart lại dịch vụ cinder systemctl restart openstack-cinder-*
 
+### Hướng dẫn thực hiện tạo backup cho cinder và restore lại backup
 
+Xem danh sách volume
 
+`cinder list`
 
+<img src="/img/10.jpg">
 
+Show trạng thái volume vltest:
 
+<img src="/img/11.jpg">
 
+Xem danh sách các backup:
 
+`cinder backup-list`
 
+Tạo backup cho volume `vltest`:
 
+`cinder backup-create --display-name vltest_backup vltest`
 
+<img src="/img/12.jpg">
 
+Kiểm tra lại bằng lệnh `cinder backup-list`
 
+Để restore lại volume về trạng thái lúc tạo backup, sử dụng lệnh sau:
+
+`cinder backup-restore --volume-id <volume-id> <backup-id>`
+
+Để xóa một backup
+
+`cinder backup-delete <backup-id>`
 
 
 
