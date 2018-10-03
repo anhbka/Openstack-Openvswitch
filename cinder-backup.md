@@ -96,7 +96,7 @@ Chỉnh sửa :
 
 Dùng lệnh `df -kh` để kiểm tra xem thư mục đã được mount chưa.
 
-<img src=/img/9.jpg">
+<img src="/img/9.jpg">
 
 
 
