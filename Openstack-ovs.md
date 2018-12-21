@@ -20,7 +20,7 @@ Set name controller:
 192.168.239.190    controller
 192.168.239.191    compute1
 192.168.239.192	   compute2
-172.16.10.128	controller
+192.168.30.40	controller
 172.16.10.129	compute1
 172.16.10.130	compute2
 ```
@@ -178,9 +178,9 @@ keystone-manage credential_setup --keystone-user keystone --keystone-group keyst
 ```
 ```
 keystone-manage bootstrap --bootstrap-password Welcome123 \
-  --bootstrap-admin-url http://172.16.10.128:5000/v3/ \
-  --bootstrap-internal-url http://172.16.10.128:5000/v3/ \
-  --bootstrap-public-url http://172.16.10.128:5000/v3/ \
+  --bootstrap-admin-url http://192.168.30.40:5000/v3/ \
+  --bootstrap-internal-url http://192.168.30.40:5000/v3/ \
+  --bootstrap-public-url http://192.168.30.40:5000/v3/ \
   --bootstrap-region-id RegionOne
 ```
 `echo "ServerName controller" >> /etc/httpd/conf/httpd.conf`
@@ -199,7 +199,7 @@ export OS_PASSWORD=Welcome123
 export OS_PROJECT_NAME=admin
 export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_DOMAIN_NAME=Default
-export OS_AUTH_URL=http://172.16.10.128:5000/v3
+export OS_AUTH_URL=http://192.168.30.40:5000/v3
 export OS_IDENTITY_API_VERSION=3
 ```
 
@@ -228,11 +228,11 @@ openstack user create --domain default \
 `unset OS_AUTH_URL Welcome123`
 
 ```
-openstack --os-auth-url http://172.16.10.128:5000/v3 \
+openstack --os-auth-url http://192.168.30.40:5000/v3 \
   --os-project-domain-name Default --os-user-domain-name Default \
   --os-project-name admin --os-username admin token issue
   
-openstack --os-auth-url http://172.16.10.128:5000/v3 \
+openstack --os-auth-url http://192.168.30.40:5000/v3 \
   --os-project-domain-name Default --os-user-domain-name Default \
   --os-project-name demo --os-username demo token issue  
 
@@ -299,13 +299,13 @@ openstack service create --name glance \
   --description "OpenStack Image" image
   
 openstack endpoint create --region RegionOne \
-  image public http://172.16.10.128:9292  
+  image public http://192.168.30.40:9292  
 
 openstack endpoint create --region RegionOne \
-  image internal http://172.16.10.128:9292
+  image internal http://192.168.30.40:9292
 
 openstack endpoint create --region RegionOne \
-  image admin http://172.16.10.128:9292
+  image admin http://192.168.30.40:9292
 ```
 `yum install openstack-glance -y`
 
@@ -313,12 +313,12 @@ openstack endpoint create --region RegionOne \
 
 ``` sh
 [database]
-connection = mysql+pymysql://glance:Welcome123@172.16.10.128/glance
+connection = mysql+pymysql://glance:Welcome123@192.168.30.40/glance
 
 [keystone_authtoken]
-auth_uri = http://172.16.10.128:5000
-auth_url = http://172.16.10.128:5000
-memcached_servers = 172.16.10.128:11211
+auth_uri = http://192.168.30.40:5000
+auth_url = http://192.168.30.40:5000
+memcached_servers = 192.168.30.40:11211
 auth_type = password
 project_domain_name = Default
 user_domain_name = Default
@@ -338,11 +338,11 @@ filesystem_store_datadir = /var/lib/glance/images/
 
 ``` sh
 [database]
-connection = mysql+pymysql://glance:Welcome123@172.16.10.128/glance
+connection = mysql+pymysql://glance:Welcome123@192.168.30.40/glance
 [keystone_authtoken]
-auth_uri = http://172.16.10.128:5000
-auth_url = http://172.16.10.128:5000
-memcached_servers = 172.16.10.128:11211
+auth_uri = http://192.168.30.40:5000
+auth_url = http://192.168.30.40:5000
+memcached_servers = 192.168.30.40:11211
 auth_type = password
 project_domain_name = Default
 user_domain_name = Default
@@ -415,13 +415,13 @@ openstack service create --name nova \
   --description "OpenStack Compute" compute
 
 openstack endpoint create --region RegionOne \
-  compute public http://172.16.10.128:8774/v2.1  
+  compute public http://192.168.30.40:8774/v2.1  
 
 openstack endpoint create --region RegionOne \
-  compute internal http://172.16.10.128:8774/v2.1
+  compute internal http://192.168.30.40:8774/v2.1
 
 openstack endpoint create --region RegionOne \
-  compute admin http://172.16.10.128:8774/v2.1
+  compute admin http://192.168.30.40:8774/v2.1
 ```
 
 `openstack user create --domain default --password-prompt placement`
@@ -431,9 +431,9 @@ openstack endpoint create --region RegionOne \
 `openstack service create --name placement --description "Placement API" placement`
 
 ``` sh
-openstack endpoint create --region RegionOne placement public http://172.16.10.128:8778
-openstack endpoint create --region RegionOne placement internal http://172.16.10.128:8778
-openstack endpoint create --region RegionOne placement admin http://172.16.10.128:8778
+openstack endpoint create --region RegionOne placement public http://192.168.30.40:8778
+openstack endpoint create --region RegionOne placement internal http://192.168.30.40:8778
+openstack endpoint create --region RegionOne placement admin http://192.168.30.40:8778
 ```
 
 ```
@@ -447,8 +447,8 @@ yum install openstack-nova-api openstack-nova-conductor \
 ``` sh
 [DEFAULT]
 enabled_apis = osapi_compute,metadata
-transport_url = rabbit://openstack:Welcome123@172.16.10.128
-my_ip = 172.16.10.128
+transport_url = rabbit://openstack:Welcome123@192.168.30.40
+my_ip = 192.168.30.40
 use_neutron = True
 firewall_driver = nova.virt.firewall.NoopFirewallDriver
 
@@ -462,8 +462,8 @@ connection = mysql+pymysql://nova:Welcome123@192.168.239.190/nova
 auth_strategy = keystone
 
 [keystone_authtoken]
-auth_url = http://172.16.10.128:5000/v3
-memcached_servers = 172.16.10.128:11211
+auth_url = http://192.168.30.40:5000/v3
+memcached_servers = 192.168.30.40:11211
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -477,7 +477,7 @@ server_listen = $my_ip
 server_proxyclient_address = $my_ip
 
 [glance]
-api_servers = http://172.16.10.128:9292
+api_servers = http://192.168.30.40:9292
 
 [oslo_concurrency]
 lock_path = /var/lib/nova/tmp
@@ -488,7 +488,7 @@ project_domain_name = Default
 project_name = service
 auth_type = password
 user_domain_name = Default
-auth_url = http://172.16.10.128:5000/v3
+auth_url = http://192.168.30.40:5000/v3
 username = placement
 password = Welcome123
 
@@ -534,7 +534,7 @@ systemctl start openstack-nova-api.service \
 ``` sh
 [DEFAULT]
 enabled_apis = osapi_compute,metadata
-transport_url = rabbit://openstack:Welcome123@172.16.10.128
+transport_url = rabbit://openstack:Welcome123@192.168.30.40
 my_ip = 172.16.10.129
 use_neutron = True
 firewall_driver = nova.virt.firewall.NoopFirewallDriver
@@ -543,8 +543,8 @@ firewall_driver = nova.virt.firewall.NoopFirewallDriver
 auth_strategy = keystone
 
 [keystone_authtoken]
-auth_url = http://172.16.10.128:5000/v3
-memcached_servers = 172.16.10.128:11211
+auth_url = http://192.168.30.40:5000/v3
+memcached_servers = 192.168.30.40:11211
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -559,7 +559,7 @@ server_proxyclient_address = $my_ip
 novncproxy_base_url = http://192.168.239.190:6080/vnc_auto.html
 
 [glance]
-api_servers = http://172.16.10.128:9292
+api_servers = http://192.168.30.40:9292
 
 [oslo_concurrency]
 lock_path = /var/lib/nova/tmp
@@ -570,7 +570,7 @@ project_domain_name = Default
 project_name = service
 auth_type = password
 user_domain_name = Default
-auth_url = http://172.16.10.128:5000/v3
+auth_url = http://192.168.30.40:5000/v3
 username = placement
 password = Welcome123
 
@@ -632,7 +632,7 @@ Tạo chứng thực service:
 
 - Tạo neutron user:
 ```
-openstack user create --domain default --password-prompt neutron
+openstack user create --domain default --password Welcome123 neutron
 
 User Password:Welcome123
 Repeat User Password:Welcome123
@@ -670,7 +670,7 @@ openstack service create --name neutron --description "OpenStack Networking" net
 Tạo Networking service API endpoints:
 
 ```
-openstack endpoint create --region RegionOne network public http://172.16.10.128:9696
+openstack endpoint create --region RegionOne network public http://192.168.30.40:9696
 
 +--------------+----------------------------------+
 | Field        | Value                            |
@@ -686,7 +686,7 @@ openstack endpoint create --region RegionOne network public http://172.16.10.128
 | url          | http://controller:9696           |
 +--------------+----------------------------------+
 
-openstack endpoint create --region RegionOne network internal http://172.16.10.128:9696
+openstack endpoint create --region RegionOne network internal http://192.168.30.40:9696
 
 +--------------+----------------------------------+
 | Field        | Value                            |
@@ -702,7 +702,7 @@ openstack endpoint create --region RegionOne network internal http://172.16.10.1
 | url          | http://controller:9696           |
 +--------------+----------------------------------+
 
-openstack endpoint create --region RegionOne network admin http://172.16.10.128:9696
+openstack endpoint create --region RegionOne network admin http://192.168.30.40:9696
 
 +--------------+----------------------------------+
 | Field        | Value                            |
@@ -733,18 +733,18 @@ vi /etc/neutron/neutron.conf
 [DEFAULT]
 core_plugin = ml2
 service_plugins =
-transport_url = rabbit://openstack:Welcome123@172.16.10.128
+transport_url = rabbit://openstack:Welcome123@192.168.30.40
 auth_strategy = keystone
 notify_nova_on_port_status_changes = true
 notify_nova_on_port_data_changes = true
 
 [database]
-connection = mysql+pymysql://neutron:Welcome123@172.16.10.128/neutron
+connection = mysql+pymysql://neutron:Welcome123@192.168.30.40/neutron
 
 [keystone_authtoken]
-auth_uri = http://172.16.10.128:5000
-auth_url = http://172.16.10.128:5000
-memcached_servers = 172.16.10.128:11211
+auth_uri = http://192.168.30.40:5000
+auth_url = http://192.168.30.40:5000
+memcached_servers = 192.168.30.40:11211
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -753,7 +753,7 @@ username = neutron
 password = Welcome123
 
 [nova]
-auth_url = http://172.16.10.128:5000
+auth_url = http://192.168.30.40:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -873,7 +873,7 @@ vi /etc/neutron/plugins/ml2/openvswitch_agent.ini
 
 [ovs]
 bridge_mappings = provider:br-provider
-local_ip = 10.10.10.136
+local_ip = 10.10.10.40
 
 [agent]
 tunnel_types = vxlan
@@ -918,7 +918,7 @@ Chỉnh sửa ` /etc/neutron/metadata_agent.ini`
 vi /etc/neutron/metadata_agent.ini
 
 [DEFAULT]
-nova_metadata_host = 172.16.10.128
+nova_metadata_host = 192.168.30.40
 metadata_proxy_shared_secret = Welcome123
 ```
 
@@ -930,8 +930,8 @@ Chỉnh sửa `/etc/nova/nova.conf`
 vi /etc/nova/nova.conf
 
 [neutron]
-url = http://172.16.10.128:9696
-auth_url = http://172.16.10.128:5000
+url = http://192.168.30.40:9696
+auth_url = http://192.168.30.40:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -948,37 +948,38 @@ systemctl start openvswitch.service
 systemctl enable openvswitch.service
 ```
 
-- Tạo OVS provider:
+Tạo OVS provider:
 
 `ovs-vsctl add-br br-provider`
 
-- Flush ip cho card ens35
+Flush ip cho card eth2
 
-`ip addr flush dev ens35`
+`ip addr flush dev eth2`
 
-- Gán ip cho card br-provider
+Gán `interface` vào port của `br-provider`
 
-`ip addr add 192.168.239.190/24 dev br-provider`
+`ovs-vsctl add-port br-provider eth2`
 
-- Gán interface vào port của br-provider
+Cho phép link kết nối tới br-provider hoạt động
+
+`ip link set dev br-provider up`
+
+Khởi động lại dịch vụ
+
+`service network restart`
+
+Kiểm tra
+`ovs-vsctl show`
+
 ```
-ovs-vsctl add-port br-provider ens35
-```
-- Cho phép link kết nối tới br-provider hoạt động
-```
-ip link set dev br-provider up
-```
-- Tạo file cấu hình cho card br-provider
-```
-cp /etc/sysconfig/network-scripts/ifcfg-ens35 /etc/sysconfig/network-scripts/ifcfg-br-provider
+cp /etc/sysconfig/network-scripts/ifcfg-eth2 /etc/sysconfig/network-scripts/ifcfg-br-provider
 ```
 
 - Setup lại card mạng ens34 ( Dùng lệnh ip a lấy HWADDR )
 ```
-vi /etc/sysconfig/network-scripts/ifcfg-ens35
+vi /etc/sysconfig/network-scripts/ifcfg-eth2
 
-DEVICE=ens35
-HWADDR="00:0c:29:cd:cd:4d"
+DEVICE=eth2
 TYPE=OVSPort
 DEVICETYPE=ovs
 OVS_BRIDGE=br-provider
@@ -992,8 +993,6 @@ TYPE=OVSBridge
 BOOTPROTO=static
 IPADDR=192.168.239.190
 NETMASK=255.255.255.0
-GATEWAY=192.168.239.1
-DNS=8.8.8.8,1.1.1.1
 ONBOOT=yes
 ```
 - Khởi động lại dịch vụ
@@ -1058,14 +1057,14 @@ Cấu hình `/etc/neutron/neutron.conf`
 vi /etc/neutron/neutron.conf
 
 [DEFAULT]
-transport_url = rabbit://openstack:Welcome123@172.16.10.128
+transport_url = rabbit://openstack:Welcome123@192.168.30.40
 auth_strategy = keystone
 core_plugin = ml2
 
 [keystone_authtoken]
-auth_uri = http://172.16.10.128:5000
-auth_url = http://172.16.10.128:5000
-memcached_servers = 172.16.10.128:11211
+auth_uri = http://192.168.30.40:5000
+auth_url = http://192.168.30.40:5000
+memcached_servers = 192.168.30.40:11211
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -1127,8 +1126,8 @@ vi /etc/nova/nova.conf
 
 
 [neutron]
-url = http://172.16.10.128:9696
-auth_url = http://172.16.10.128:5000
+url = http://192.168.30.40:9696
+auth_url = http://192.168.30.40:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -1160,37 +1159,34 @@ systemctl start openvswitch.service
 systemctl enable openvswitch.service
 ```
 
-- Tạo OVS provider:
+Tạo OVS provider:
 
 `ovs-vsctl add-br br-provider`
 
-- Flush ip cho card ens35
+Flush ip cho card eth2
 
-`ip addr flush dev ens35`
+`ip addr flush dev eth2`
 
-- Gán ip cho card br-provider
+Gán interface vào port của br-provider
 
-`ip addr add 192.168.239.191/24 dev br-provider`
+`ovs-vsctl add-port br-provider eth2`
 
-- Gán interface vào port của br-provider
-```
-ovs-vsctl add-port br-provider ens35
-```
-- Cho phép link kết nối tới br-provider hoạt động
-```
-ip link set dev br-provider up
-```
-- Tạo file cấu hình cho card br-provider
-```
-cp /etc/sysconfig/network-scripts/ifcfg-ens35 /etc/sysconfig/network-scripts/ifcfg-br-provider
-```
+Cho phép link kết nối tới br-provider hoạt động
 
-- Setup lại card mạng ens35
+`ip link set dev br-provider up`
+
+Khởi động lại dịch vụ
+
+`service network restart`
+
+Kiểm tra
+ovs-vsctl show
+
+- Setup lại card mạng eth2
 ```
-vi /etc/sysconfig/network-scripts/ifcfg-ens35
+vi /etc/sysconfig/network-scripts/ifcfg-eth2
 NAME=br-provider
-DEVICE=ens35
-HWADDR="00:0c:29:51:53:5e"
+DEVICE=eth2
 TYPE=OVSPort
 DEVICETYPE=ovs
 OVS_BRIDGE=br-provider
@@ -1205,8 +1201,6 @@ TYPE=OVSBridge
 BOOTPROTO=static
 IPADDR=192.168.239.191
 NETMASK=255.255.255.0
-GATEWAY=192.168.239.1
-DNS=8.8.8.8,1.1.1.1
 ONBOOT=yes
 ```
 - Khởi động lại dịch vụ
