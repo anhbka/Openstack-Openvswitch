@@ -596,26 +596,11 @@ Làm tương tự trên node compute2
 
 `nova-status upgrade check`
 
-### Neutron
+### Cài đặt trên node controller
+Cài các gói: `yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-openvswitch ebtables -y`
 
-### Cài đặt networking service - neutron
 
-###  Cài đặt trên node controller
 
-Cài các gói:
-`yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-openvswitch ebtables`
-
-Từ các node, test truy cập Internet:
-
-`ping -c 4 openstack.org`
-
-Tại các node, kiểm tra ping:
-
-```
-yum install fping -y
-
-fping controller compute compute2
-```
 Tạo database:
 ```
 mysql -u root -pWelcome123
@@ -624,115 +609,44 @@ GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' IDENTIFIED BY 'Welcom
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' IDENTIFIED BY 'Welcome123';
 exit
 ```
+
+
 Khởi tạo biến môi trường admin, thực hiện CLI:
 
 `. admin-openrc`
 
 Tạo chứng thực service:
 
-- Tạo neutron user:
-```
-openstack user create --domain default --password Welcome123 neutron
+Tạo neutron user:
 
-User Password:Welcome123
-Repeat User Password:Welcome123
-+---------------------+----------------------------------+
-| Field               | Value                            |
-+---------------------+----------------------------------+
-| domain_id           | default                          |
-| enabled             | True                             |
-| id                  | fdb0f541e28141719b6a43c8944bf1fb |
-| name                | neutron                          |
-| options             | {}                               |
-| password_expires_at | None                             |
-+---------------------+----------------------------------+
-```
-- Tạo admin role tới neutron user:
+`openstack user create --domain default --password Welcome123 neutron`
+
+Tạo admin role tới neutron user:
 
 `openstack role add --project service --user neutron admin`
 
-- Tạo đối tượng neutron service:
+Tạo đối tượng neutron service:
 
-```
-openstack service create --name neutron --description "OpenStack Networking" network
-
-+-------------+----------------------------------+
-| Field       | Value                            |
-+-------------+----------------------------------+
-| description | OpenStack Networking             |
-| enabled     | True                             |
-| id          | f71529314dab4a4d8eca427e701d209e |
-| name        | neutron                          |
-| type        | network                          |
-+-------------+----------------------------------+
-```
+`openstack service create --name neutron --description "OpenStack Networking" network`
 
 Tạo Networking service API endpoints:
 
-```
-openstack endpoint create --region RegionOne network public http://192.168.30.40:9696
+`openstack endpoint create --region RegionOne network public http://192.168.30.40:9696`
 
-+--------------+----------------------------------+
-| Field        | Value                            |
-+--------------+----------------------------------+
-| enabled      | True                             |
-| id           | 85d80a6d02fc4b7683f611d7fc1493a3 |
-| interface    | public                           |
-| region       | RegionOne                        |
-| region_id    | RegionOne                        |
-| service_id   | f71529314dab4a4d8eca427e701d209e |
-| service_name | neutron                          |
-| service_type | network                          |
-| url          | http://controller:9696           |
-+--------------+----------------------------------+
+`openstack endpoint create --region RegionOne network internal http://192.168.30.40:9696`
 
-openstack endpoint create --region RegionOne network internal http://192.168.30.40:9696
+`openstack endpoint create --region RegionOne network admin http://192.168.30.40:9696`
 
-+--------------+----------------------------------+
-| Field        | Value                            |
-+--------------+----------------------------------+
-| enabled      | True                             |
-| id           | 09753b537ac74422a68d2d791cf3714f |
-| interface    | internal                         |
-| region       | RegionOne                        |
-| region_id    | RegionOne                        |
-| service_id   | f71529314dab4a4d8eca427e701d209e |
-| service_name | neutron                          |
-| service_type | network                          |
-| url          | http://controller:9696           |
-+--------------+----------------------------------+
-
-openstack endpoint create --region RegionOne network admin http://192.168.30.40:9696
-
-+--------------+----------------------------------+
-| Field        | Value                            |
-+--------------+----------------------------------+
-| enabled      | True                             |
-| id           | 1ee14289c9374dffb5db92a5c112fc4e |
-| interface    | admin                            |
-| region       | RegionOne                        |
-| region_id    | RegionOne                        |
-| service_id   | f71529314dab4a4d8eca427e701d209e |
-| service_name | neutron                          |
-| service_type | network                          |
-| url          | http://controller:9696           |
-+--------------+----------------------------------+
-```
-
-#### Cấu hình Provider network
-
-Cài đặt các thành phần
-
-`yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-openvswitch ebtables -y`
-
-Cấu hình Chỉnh sửa file `/etc/neutron/neutron.conf`:
+Cấu hình Provider network
+Cấu hình Chỉnh sửa file `/etc/neutron/neutron.conf:`
 
 ```
 vi /etc/neutron/neutron.conf
 
 [DEFAULT]
 core_plugin = ml2
-service_plugins =
+service_plugins = router
+allow_overlapping_ips = true
 transport_url = rabbit://openstack:Welcome123@192.168.30.40
 auth_strategy = keystone
 notify_nova_on_port_status_changes = true
@@ -765,95 +679,18 @@ password = Welcome123
 [oslo_concurrency]
 lock_path = /var/lib/neutron/tmp
 ```
-**Cấu hình Modular Layer 2 (ML2) plug-in** (*ML2 plug-in sử dụng cho kỹ thuật Linux brigde, xây dựng virtual network layer-2 (bridging and switching) sử dụng cho instance*)
+
 
 Cấu hình file /etc/neutron/plugins/ml2/ml2_conf.ini:
-
 ```
 vi /etc/neutron/plugins/ml2/ml2_conf.ini
-
-[ml2]
-type_drivers = flat,vlan
-tenant_network_types = 
-mechanism_drivers = openvswitch
-extension_drivers = port_security
-
-[ml2_type_vlan]
-network_vlan_ranges = provider
-
-[ml2_type_flat]
-flat_networks = provider
-
-[securitygroup]
-enable_ipset = true
-```
-
-**Cấu hình openvswitch agent** (*Linux bridge agent xây dựng layer-2 (bridging and switching) virtual networking infrastructure cho instances xử lý các security group hỗ trợ cho openvswitch*)
-
-Chỉnh sửa `/etc/neutron/plugins/ml2/openvswitch_agent.ini`
-
-```
-
-vi /etc/neutron/plugins/ml2/openvswitch_agent.ini
-
-
-
-[ovs]
-bridge_mappings = provider:br-provider
-
-[securitygroup]
-...
-enable_security_group = true
-firewall_driver = iptables_hybrid
-```
-
-**Cấu hình DHCP agent** (*DHCP agent cung cấp dịch vụ DHCP cho virtual network*)
-
-Sao lưu file cấu hình DHCP agent:
-
-Chỉnh sửa `/etc/neutron/dhcp_agent.ini`
-
-```
-vi /etc/neutron/dhcp_agent.ini
-
-
-[DEFAULT]
-interface_driver = openvswitch
-dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
-enable_isolated_metadata = true
-force_metadata = true
-```
-
-
-#### Cấu hình self-service network:
-
-Trên controller
-
-cài gói:
-`yum install neutron-server neutron-plugin-ml2 neutron-openvswitch-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent -y`
-
-Chỉnh sửa file cấu hình `/etc/neutron/neutron.conf`
-
-```
-vi /etc/neutron/neutron.conf
-
-
-[DEFAULT]
-service_plugins = router
-allow_overlapping_ips = true
-
-```
-Chỉnh sửa file `/etc/neutron/plugins/ml2/ml2_conf.ini`
-
-```
-vi /etc/neutron/plugins/ml2/ml2_conf.ini
-
 
 [ml2]
 type_drivers = flat,vlan,vxlan
 tenant_network_types = vxlan
 mechanism_drivers = openvswitch,l2population
 extension_drivers = port_security
+
 
 [ml2_type_flat]
 flat_networks = provider
@@ -864,8 +701,7 @@ vni_ranges = 1:1000
 [securitygroup]
 enable_ipset = true
 ```
-
-Cấu hình Openvswitch agent: `/etc/neutron/plugins/ml2/openvswitch_agent.ini`
+Chỉnh sửa /etc/neutron/plugins/ml2/openvswitch_agent.ini
 
 ```
 vi /etc/neutron/plugins/ml2/openvswitch_agent.ini
@@ -884,36 +720,22 @@ l2_population = True
 enable_security_group = true
 firewall_driver = iptables_hybrid
 ```
-
-Cấu hình l3-agent `/etc/neutron/l3_agent.ini`
-
-```
-vi /etc/neutron/l3_agent.ini
-
-
-[DEFAULT]
-interface_driver = openvswitch
-
-```
-
-Cấu hình DHCP agent `/etc/neutron/dhcp_agent.ini`
-
+Chỉnh sửa /etc/neutron/dhcp_agent.ini
 ```
 vi /etc/neutron/dhcp_agent.ini
 
-
 [DEFAULT]
-# ...
 interface_driver = openvswitch
 dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
 enable_isolated_metadata = true
-force_metadata = True
+force_metadata = true
 ```
-
-**Cấu hình metadata agent** (*Metadata agent cung cấp thông tin cấu hình cho instance (như chứng thực instance)*)
-
-Chỉnh sửa ` /etc/neutron/metadata_agent.ini`
-
+```
+vi /etc/neutron/l3_agent.ini
+[DEFAULT]
+interface_driver = openvswitch
+```
+Chỉnh sửa /etc/neutron/metadata_agent.ini
 ```
 vi /etc/neutron/metadata_agent.ini
 
@@ -921,9 +743,6 @@ vi /etc/neutron/metadata_agent.ini
 nova_metadata_host = 192.168.30.40
 metadata_proxy_shared_secret = Welcome123
 ```
-
-**Cấu hình Compute service sử dụng the Networking service** (Tại Controller)
-
 Chỉnh sửa `/etc/nova/nova.conf`
 
 ```
@@ -942,10 +761,39 @@ password = Welcome123
 service_metadata_proxy = true
 metadata_proxy_shared_secret = Welcome123
 ```
-- Khởi động openvswitch:
+
+Khởi động openvswitch:
+
 ```
 systemctl start openvswitch.service
 systemctl enable openvswitch.service
+```
+
+
+Setup lại card mạng `eth2`
+
+``` sh
+vi /etc/sysconfig/network-scripts/ifcfg-eth2
+
+DEVICE=eth2
+NAME=eth2
+TYPE=OVSPort
+DEVICETYPE=ovs
+OVS_BRIDGE=br-provider
+ONBOOT=yes
+```
+Setup card mạng br-provider
+```
+vi /etc/sysconfig/network-scripts/ifcfg-br-provider
+
+DEVICE=br-provider
+NAME=br-provider
+DEVICETYPE=ovs
+TYPE=OVSBridge
+BOOTPROTO=static
+IPADDR=192.168.50.240
+ONBOOT=yes
+
 ```
 
 Tạo OVS provider:
@@ -956,94 +804,39 @@ Flush ip cho card eth2
 
 `ip addr flush dev eth2`
 
-Gán `interface` vào port của `br-provider`
+Gán interface vào port của br-provider
 
 `ovs-vsctl add-port br-provider eth2`
 
 Cho phép link kết nối tới br-provider hoạt động
+`ip link set dev br-provider up && service network restart`
 
-`ip link set dev br-provider up`
-
-Khởi động lại dịch vụ
-
-`service network restart`
 
 Kiểm tra
 `ovs-vsctl show`
 
-```
-cp /etc/sysconfig/network-scripts/ifcfg-eth2 /etc/sysconfig/network-scripts/ifcfg-br-provider
-```
 
-- Setup lại card mạng ens34 ( Dùng lệnh ip a lấy HWADDR )
-```
-vi /etc/sysconfig/network-scripts/ifcfg-eth2
-
-DEVICE=eth2
-TYPE=OVSPort
-DEVICETYPE=ovs
-OVS_BRIDGE=br-provider
-ONBOOT=yes
-```
-- Setup card mạng br-provider
-```
-DEVICE=br-provider
-DEVICETYPE=ovs
-TYPE=OVSBridge
-BOOTPROTO=static
-IPADDR=192.168.239.190
-NETMASK=255.255.255.0
-ONBOOT=yes
-```
-- Khởi động lại dịch vụ
-
-`Service network restart`
-
-- Kiểm tra
-
-`ovs-vsctl show`
-
-
-**Khởi tạo dịch vụ***
-
-Các Networking service initialization script yêu cầu symbolic link `/etc/neutron/plugin.ini` tới ML2 plug-in config file `/etc/neutron/plugins/ml2/ml2_conf.ini`
-
-- Nếu Symbolic link không tồn tại, tạo cmd:
 
 `ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini`
 
-- Đồng bộ database:
+Đồng bộ database:
 
-```
-su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
-```
+`su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron`
 
-- Khởi động lại Compute API service:
 
 `systemctl restart openstack-nova-api.service`
 
-Chạy Networking services:
-
-
 ```
 systemctl enable neutron-server.service neutron-openvswitch-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
-
 systemctl start neutron-server.service neutron-openvswitch-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
 ```
-
 Khởi động L3 agent
 ```
 systemctl enable neutron-l3-agent.service
-
 systemctl start neutron-l3-agent.service
 ```
-
-
-
-<a name="6.2"></a>
 ### Cài đặt trên node compute
 
-**(Làm tương tự với compute 2)**
 
 Cài đặt các thành phần
 
@@ -1076,10 +869,6 @@ password = Welcome123
 lock_path = /var/lib/neutron/tmp
 ```
 
-#### Cấu hình Provider network
-
-Cấu hình Openvswitch agent (*Linux bridge agent xây dựng layer-2 (bridging và switching) virtual networking infrastructure cho instances và xử lý các security group hỗ trợ openvswitch*)
-
 Chỉnh sửa `/etc/neutron/plugins/ml2/openvswitch_agent.ini`
 
 ```
@@ -1088,23 +877,11 @@ vi /etc/neutron/plugins/ml2/openvswitch_agent.ini
 
 [ovs]
 bridge_mappings = provider:br-provider
+local_ip = 10.10.10.41
 
 [securitygroup]
 enable_security_group = true
 firewall_driver = iptables_hybrid
-```
-
-#### Cấu hình self-service network:
-
-Cấu hình bridge agent layer 2  `/etc/neutron/plugins/ml2/openvswitch_agent.ini`
-
-```
-vi /etc/neutron/plugins/ml2/openvswitch_agent.ini
-
-
-[ovs]
-local_ip = 10.10.10.137 (với compute2 là 10.10.10.138)
-
 
 [agent]
 tunnel_types = vxlan
@@ -1114,16 +891,14 @@ l2_population = True
 [securitygroup]
 enable_security_group = true
 firewall_driver = iptables_hybrid
-
 ```
 
-**Cấu hình Compute service sử dụng Networking service**
+
+Cấu hình Compute service sử dụng Networking service
 
 Cấu hình file `/etc/nova/nova.conf`:
-
 ```
 vi /etc/nova/nova.conf
-
 
 [neutron]
 url = http://192.168.30.40:9696
@@ -1136,29 +911,49 @@ project_name = service
 username = neutron
 password = Welcome123
 ```
-- Tạo OVS provider
-
-
-
-**Khởi tạo dịch vụ**
 
 Khởi động lại Compute service:
 
 `systemctl restart openstack-nova-compute.service`
 
 Chạy Openvswitch agent:
-
 ```
 systemctl enable neutron-openvswitch-agent.service
 systemctl start neutron-openvswitch-agent.service
 ```
 
-- Khởi động openvswitch:
+Khởi động openvswitch:
+
 ```
 systemctl start openvswitch.service
 systemctl enable openvswitch.service
 ```
 
+Setup lại card mạng `eth2`
+
+```
+vi /etc/sysconfig/network-scripts/ifcfg-eth2
+
+DEVICE=eth2
+NAME=eth2
+TYPE=OVSPort
+DEVICETYPE=ovs
+OVS_BRIDGE=br-provider
+ONBOOT=yes
+```
+Setup card mạng `br-provider`
+```
+vi /etc/sysconfig/network-scripts/ifcfg-br-provider
+
+DEVICE=br-provider
+NAME=br-provider
+DEVICETYPE=ovs
+TYPE=OVSBridge
+BOOTPROTO=static
+IPADDR=192.168.50.241
+ONBOOT=yes
+
+```
 Tạo OVS provider:
 
 `ovs-vsctl add-br br-provider`
@@ -1172,77 +967,9 @@ Gán interface vào port của br-provider
 `ovs-vsctl add-port br-provider eth2`
 
 Cho phép link kết nối tới br-provider hoạt động
+`ip link set dev br-provider up && service network restart`
 
-`ip link set dev br-provider up`
-
-Khởi động lại dịch vụ
-
-`service network restart`
 
 Kiểm tra
-ovs-vsctl show
-
-- Setup lại card mạng eth2
-```
-vi /etc/sysconfig/network-scripts/ifcfg-eth2
-NAME=br-provider
-DEVICE=eth2
-TYPE=OVSPort
-DEVICETYPE=ovs
-OVS_BRIDGE=br-provider
-ONBOOT=yes
-```
-- Setup card mạng br-provider
-```
-NAME=br-provider
-DEVICE=br-provider
-DEVICETYPE=ovs
-TYPE=OVSBridge
-BOOTPROTO=static
-IPADDR=192.168.239.191
-NETMASK=255.255.255.0
-ONBOOT=yes
-```
-- Khởi động lại dịch vụ
-
-`Service network restart`
-
-- Kiểm tra
 
 `ovs-vsctl show`
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
